@@ -32,10 +32,10 @@ for z = 1:length(T)
             lagerkraft(g,z,:) = -schwerkraft;
         else
             lagermoment(g,z,:) = rob.kl(g).I_o * rob.kl(g).Bi_dot_omega + tilde(rob.kl(g).Bi_omega)*rob.kl(g).I_o*rob.kl(g).Bi_omega...% Drallaenderung
-                                - tilde(rob.kl(g).Bi_r_s)*schwerkraft...
-                                - tilde(rob.kl(g+1).Bv_r_vi)*rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]...
-                                - rob.kl(g+1).A_iv'*[lagermoment(g+1,z,1);lagermoment(g+1,z,2);lagermoment(g+1,z,3)];
-            lagerkraft(g,z,:) = -schwerkraft-rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)];
+                                - tilde(rob.kl(g).Bi_r_s)*schwerkraft...% Moment von Schwerkraft
+                                - tilde(rob.kl(g+1).Bv_r_vi)*rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]... % Moment von Lagerkraft von naechsten Gelenk
+                                - rob.kl(g+1).A_iv'*[lagermoment(g+1,z,1);lagermoment(g+1,z,2);lagermoment(g+1,z,3)]; % Lagermoment von naechsten Gelenk
+            lagerkraft(g,z,:) = -schwerkraft-rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]; % - schwerkraft - Lagerkraft von naechsten Gelenk
         end
     end 
 end
