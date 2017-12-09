@@ -19,7 +19,7 @@ for z = 1:length(T)
     rob.dot_q = dot_Q(:,z);
     rob.ddot_q = ddot_Q(:,z);
     
-    rob=berechne_dk_positionen_vektorkette(rob); % geaendert
+    rob=berechne_dk_positionen_vektorkette(rob);
     rob=berechne_dk_geschwindigkeiten(rob);
     rob=berechne_dk_beschleunigungen(rob);
     
