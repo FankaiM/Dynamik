@@ -1,6 +1,6 @@
 %Aufraeumen
 close all;
-clear all;
+clear;
 
 %Lade Sollbahn im Arbeitsraum in Workspace
 load( 'Gelenkwinkelbahn.mat' );
@@ -12,6 +12,9 @@ rob = erstelle_roboter();
 
 lagerkraft = zeros(rob.N_Q,length(T),3);
 lagermoment = zeros(rob.N_Q,length(T),3);
+
+lagerkraft_norm = zeros(rob.N_Q,length(T));
+lagermoment_norm = zeros(rob.N_Q,length(T));
 
 for z = 1:length(T)
     
@@ -28,56 +31,43 @@ for z = 1:length(T)
         schwerkraft = rob.kl(g).A_i0 * rob.kl(g).m * rob.B0_g;
         if g == 6
             lagermoment(g,z,:) = rob.kl(g).I_o * rob.kl(g).Bi_dot_omega + tilde(rob.kl(g).Bi_omega)*rob.kl(g).I_o*rob.kl(g).Bi_omega...% Drallaenderung
+                                + rob.kl(i).m*tilde(rob.kl(i).Bi_r_s)*rob.kl(i).Bi_ddot_r_i...
                                 - tilde(rob.kl(g).Bi_r_s)*schwerkraft; % Moment der Schwerkraft
-            lagerkraft(g,z,:) = -schwerkraft;
+            lagerkraft(g,z,:) = rob.kl(g).m * rob.kl(g).Bi_ddot_r_s - schwerkraft;
         else
             lagermoment(g,z,:) = rob.kl(g).I_o * rob.kl(g).Bi_dot_omega + tilde(rob.kl(g).Bi_omega)*rob.kl(g).I_o*rob.kl(g).Bi_omega...% Drallaenderung
+                                + rob.kl(i).m*tilde(rob.kl(i).Bi_r_s)*rob.kl(i).Bi_ddot_r_i...
                                 - tilde(rob.kl(g).Bi_r_s)*schwerkraft...% Moment von Schwerkraft
-                                - tilde(rob.kl(g+1).Bv_r_vi)*rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]... % Moment von Lagerkraft von naechsten Gelenk
-                                - rob.kl(g+1).A_iv'*[lagermoment(g+1,z,1);lagermoment(g+1,z,2);lagermoment(g+1,z,3)]; % Lagermoment von naechsten Gelenk
-            lagerkraft(g,z,:) = -schwerkraft-rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]; % - schwerkraft - Lagerkraft von naechsten Gelenk
+                                - tilde(rob.kl(g+1).Bv_r_vi)*rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]...% Moment von Lagerkraft von naechsten Gelenk
+                                - rob.kl(g+1).A_iv'*[lagermoment(g+1,z,1);lagermoment(g+1,z,2);lagermoment(g+1,z,3)];% Lagermoment von naechsten Gelenk
+            lagerkraft(g,z,:) = rob.kl(g).m * rob.kl(g).Bi_ddot_r_s - schwerkraft-rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]; % - schwerkraft - Lagerkraft von naechsten Gelenk
         end
+        lagermoment_norm(g,z) = sqrt(lagermoment(g,z,1)^2+lagermoment(g,z,2)^2+lagermoment(g,z,3)^2);
+        lagerkraft_norm(g,z) = sqrt(lagerkraft(g,z,1)^2+lagerkraft(g,z,2)^2+lagerkraft(g,z,3)^2);
     end 
 end
 
-figure('Name','Lagerkraftverlauf');
-subplot(2,3,1);
-plot(T, lagerkraft(1,:,1),...
-     T, lagerkraft(1,:,2),...
-     T, lagerkraft(1,:,3));
-subplot(2,3,2);
-plot(T, lagerkraft(2,:,1),...
-     T, lagerkraft(2,:,2),...
-     T, lagerkraft(2,:,3));
-subplot(2,3,3);
-plot(T, lagerkraft(3,:,1),...
-     T, lagerkraft(3,:,2),...
-     T, lagerkraft(3,:,3));
-subplot(2,3,4);
-plot(T, lagerkraft(4,:,1),...
-     T, lagerkraft(4,:,2),...
-     T, lagerkraft(4,:,3));
-subplot(2,3,5);
-plot(T, lagerkraft(5,:,1),...
-     T, lagerkraft(5,:,2),...
-     T, lagerkraft(5,:,3));
-subplot(2,3,6)
-plot(T, lagerkraft(6,:,1),...
-     T, lagerkraft(6,:,2),...
-     T, lagerkraft(6,:,3));
-legend( 'F_x','F_y','F_z','Location','northwest');
-xlabel( 't in [s]');
-ylabel( 'F in [kg]');
+figure('Name','Kraftverlauf')
+plot(T,lagerkraft_norm(1,:),...
+     T,lagerkraft_norm(2,:),...
+     T,lagerkraft_norm(3,:),...
+     T,lagerkraft_norm(4,:),...
+     T,lagerkraft_norm(5,:),...
+     T,lagerkraft_norm(6,:));
+h=legend( '$F_{q_1}$','$F_{q_2}$','$F_{q_3}$','$F_{q_4}$','$F_{q_5}$','$F_{q_6}$','Location','northwest');
+h.Interpreter='latex';
+xlabel( 't in [s]','Interpreter','latex');
+ylabel( '$F_q$ in [N]','Interpreter','latex');
 
-  
-figure();
-plot( T, lagermoment(1,:,3), ...
-      T, lagermoment(2,:,3), ...
-      T, lagermoment(3,:,3), ...
-      T, lagermoment(4,:,3), ...
-      T, lagermoment(5,:,3), ...
-      T, lagermoment(6,:,3) );
-h=legend( '$M_{q_1}$','$M_{q_2}$','$M_{q_3}$','$M_{q_4}$','$M_{q_5}$','$M_{q_6}$','Location','southeast');
+figure('Name','Momentverlauf')
+plot(T,lagermoment_norm(1,:),...
+     T,lagermoment_norm(2,:),...
+     T,lagermoment_norm(3,:),...
+     T,lagermoment_norm(4,:),...
+     T,lagermoment_norm(5,:),...
+     T,lagermoment_norm(6,:));
+h=legend( '$M_{q_1}$','$M_{q_2}$','$M_{q_3}$','$M_{q_4}$','$M_{q_5}$','$M_{q_6}$','Location','northwest');
 h.Interpreter='latex';
 xlabel( 't in [s]','Interpreter','latex');
 ylabel( '$M_q$ in [Nm]','Interpreter','latex');
+
