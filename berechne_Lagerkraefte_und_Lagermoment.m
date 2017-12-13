@@ -31,12 +31,12 @@ for z = 1:length(T)
         schwerkraft = rob.kl(g).A_i0 * rob.kl(g).m * rob.B0_g;
         if g == 6
             lagermoment(g,z,:) = rob.kl(g).I_o * rob.kl(g).Bi_dot_omega + tilde(rob.kl(g).Bi_omega)*rob.kl(g).I_o*rob.kl(g).Bi_omega...% Drallaenderung
-                                + rob.kl(i).m*tilde(rob.kl(i).Bi_r_s)*rob.kl(i).Bi_ddot_r_i...
+                                + rob.kl(g).m*tilde(rob.kl(g).Bi_r_s)*rob.kl(g).Bi_ddot_r_i...
                                 - tilde(rob.kl(g).Bi_r_s)*schwerkraft; % Moment der Schwerkraft
             lagerkraft(g,z,:) = rob.kl(g).m * rob.kl(g).Bi_ddot_r_s - schwerkraft;
         else
             lagermoment(g,z,:) = rob.kl(g).I_o * rob.kl(g).Bi_dot_omega + tilde(rob.kl(g).Bi_omega)*rob.kl(g).I_o*rob.kl(g).Bi_omega...% Drallaenderung
-                                + rob.kl(i).m*tilde(rob.kl(i).Bi_r_s)*rob.kl(i).Bi_ddot_r_i...
+                                + rob.kl(g).m*tilde(rob.kl(g).Bi_r_s)*rob.kl(g).Bi_ddot_r_i...
                                 - tilde(rob.kl(g).Bi_r_s)*schwerkraft...% Moment von Schwerkraft
                                 - tilde(rob.kl(g+1).Bv_r_vi)*rob.kl(g+1).A_iv'*[lagerkraft(g+1,z,1);lagerkraft(g+1,z,2);lagerkraft(g+1,z,3)]...% Moment von Lagerkraft von naechsten Gelenk
                                 - rob.kl(g+1).A_iv'*[lagermoment(g+1,z,1);lagermoment(g+1,z,2);lagermoment(g+1,z,3)];% Lagermoment von naechsten Gelenk
